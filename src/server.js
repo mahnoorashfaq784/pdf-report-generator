@@ -19,19 +19,44 @@ app.get("/health", (req, res) => {
 
 app.post("/reports", async (req, res) => {
     try {
-        const reportData = getReportData();
+        const today = new Date().toISOString().split("T")[0];
 
         const db = new DatabaseSync(dbPath);
 
-        const reportId = db
+        // Check whether today's report already exists
+        const existingReport = db
             .prepare(`
-                INSERT INTO reports (path, created_at)
-                VALUES (?, ?)
+                SELECT id, path
+                FROM reports
+                WHERE report_date = ?
+            `)
+            .get(today);
+
+        if (existingReport) {
+            db.close();
+
+            return res.status(200).json({
+                id: existingReport.id,
+                file: existingReport.path
+            });
+        }
+
+        // Generate report data
+        const reportData = getReportData();
+
+        // Reserve a new report ID
+        const result = db
+            .prepare(`
+                INSERT INTO reports (path, created_at, report_date)
+                VALUES (?, ?, ?)
             `)
             .run(
                 "",
-                new Date().toISOString()
-            ).lastInsertRowid;
+                new Date().toISOString(),
+                today
+            );
+
+        const reportId = Number(result.lastInsertRowid);
 
         const reportPath = path.join(
             __dirname,
@@ -53,11 +78,12 @@ app.post("/reports", async (req, res) => {
         db.close();
 
         res.status(201).json({
-            id: Number(reportId),
+            id: reportId,
             file: relativePath
         });
+
     } catch (error) {
-        console.error(error);
+        console.error("REPORT ERROR:", error);
 
         res.status(500).json({
             error: "Failed to generate report"
