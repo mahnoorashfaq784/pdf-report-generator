@@ -38,13 +38,22 @@ function getReportData() {
         `)
         .all();
 
+    const allBooks = db
+    .prepare(`
+        SELECT title, price, rating, url
+        FROM books
+        ORDER BY id
+    `)
+    .all();
+
     db.close();
 
     return {
         totalBooks: totalBooks.count,
         averagePrice: averagePrice.average,
         topBooks,
-        booksByRating
+        booksByRating,
+        allBooks
     };
 }
 
