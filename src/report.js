@@ -7,17 +7,11 @@ function getReportData() {
     const db = new DatabaseSync(dbPath);
 
     const totalBooks = db
-        .prepare(`
-            SELECT COUNT(*) AS count
-            FROM books
-        `)
+        .prepare("SELECT COUNT(*) AS count FROM books")
         .get();
 
     const averagePrice = db
-        .prepare(`
-            SELECT AVG(price) AS average
-            FROM books
-        `)
+        .prepare("SELECT AVG(price) AS average FROM books")
         .get();
 
     const topBooks = db
@@ -39,12 +33,12 @@ function getReportData() {
         .all();
 
     const allBooks = db
-    .prepare(`
-        SELECT title, price, rating, url
-        FROM books
-        ORDER BY id
-    `)
-    .all();
+        .prepare(`
+            SELECT title, price, rating, url
+            FROM books
+            ORDER BY id
+        `)
+        .all();
 
     db.close();
 

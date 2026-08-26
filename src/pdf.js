@@ -2,7 +2,7 @@ const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
 
-async function generateTestPdf(reportData) {
+async function generateTestPdf(reportData, outputPath) {
     const browser = await chromium.launch();
 
     const page = await browser.newPage();
@@ -192,14 +192,13 @@ async function generateTestPdf(reportData) {
     await page.setContent(html);
 
     await page.pdf({
-        path: path.join(__dirname, "..", "reports", "test.pdf"),
-        format: "A4",
+         path: outputPath,
+         format: "A4",
         printBackground: true
     });
-
     await browser.close();
 
-    console.log("PDF generated: reports/test.pdf");
+    console.log(`PDF generated: ${outputPath}`);
 }
 
 module.exports = { generateTestPdf };
